@@ -1,17 +1,22 @@
 import { ReactNode } from "react";
+import { getUserAction, getUsersAction } from "@/actions/user.action";
+import Bottombar from "@/components/sharing/Bottombar";
+import LeftSidebar from "@/components/sharing/leftsidebar/LeftSidebar";
+import RightSidebar from "@/components/sharing/rightsidebar/RightSidebar";
+import Modal from "@/components/modals/Modal";
 import { currentUser } from "@clerk/nextjs";
+import { redirect } from "next/navigation";
+import { getTotalNotificationsAction } from "@/actions/notification.action";
 
 interface Props {
 	children: ReactNode;
 }
 
 const layout = async ({ children }: Props) => {
-	let clerkUser: any = null;
+	let clerkUser = null;
 	try {
 		clerkUser = await currentUser();
-	} catch (e) {
-		// Clerk not available
-	}
+	} catch {}
 
 	if (!clerkUser) {
 		return (
@@ -25,18 +30,11 @@ const layout = async ({ children }: Props) => {
 		);
 	}
 
-	const { getUserAction, getUsersAction } = await import("@/actions/user.action");
-	const { getTotalNotificationsAction } = await import("@/actions/notification.action");
-	const Bottombar = (await import("@/components/sharing/Bottombar")).default;
-	const LeftSidebar = (await import("@/components/sharing/leftsidebar/LeftSidebar")).default;
-	const RightSidebar = (await import("@/components/sharing/rightsidebar/RightSidebar")).default;
-	const Modal = (await import("@/components/modals/Modal")).default;
-	const { redirect } = await import("next/navigation");
-
 	const user = await getUserAction(clerkUser.id);
-	if (!user) { redirect("/"); return null; }
+	if (!user) redirect("/");
 
-	if (!user.isCompleted) { redirect("/onboarding"); return null; }
+	const isCompleted = user.isCompleted;
+	if (!isCompleted) redirect("/onboarding");
 
 	const [users, totalUnreadNotifications] = await Promise.all([
 		getUsersAction({ userId: user.id }),
@@ -47,7 +45,12 @@ const layout = async ({ children }: Props) => {
 		<main className="min-h-screen">
 			<Modal imageUrl={user.imageUrl} userId={user.id} />
 			<section className="h-full max-w-7xl mx-auto flex justify-center">
-				<LeftSidebar totalUnreadNotifications={totalUnreadNotifications ?? 0} username={user.username} name={user.name} imageUrl={user.imageUrl} />
+				<LeftSidebar
+					totalUnreadNotifications={totalUnreadNotifications ?? 0}
+					username={user.username}
+					name={user.name}
+					imageUrl={user.imageUrl}
+				/>
 				<section className="max-sm:border-none border-x border-x-gray-300 max-sm:pb-32 sm:pb-0 w-full max-sm:max-w-full max-w-[600px]">
 					{children}
 				</section>
