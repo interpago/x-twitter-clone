@@ -18,7 +18,43 @@ const Page = async ({ searchParams }: Props) => {
 	const page = isValidPage(qPage);
 
 	const clerkUser = await currentUser();
-	if (!clerkUser) return null;
+
+	if (!clerkUser) {
+		const prisma = await import("@/lib/prismadb").then(m => m.default);
+		const tweets = await prisma.thread.findMany({
+			where: { parentId: null },
+			include: {
+				user: {
+					select: { id: true, imageUrl: true, name: true, username: true, followers: true, followings: true },
+				},
+				bookmarks: true,
+				likes: true,
+				_count: { select: { replies: true } },
+			},
+			orderBy: { createdAt: "desc" },
+			take: 30,
+			skip: page * 30,
+		});
+		const totalCount = await prisma.thread.count({ where: { parentId: null } });
+		return (
+			<>
+				{tweets.length ? (
+					<>
+						{tweets.map((tweet: any) => (
+							<Tweets key={tweet.id} tweet={tweet} userId="" />
+						))}
+						<PaginationButtons
+							currentPage={page}
+							currentPath={"/home"}
+							hasNext={Boolean(totalCount - page * 30 - tweets.length)}
+						/>
+					</>
+				) : (
+					<NotFound description="No posts can be displayed" />
+				)}
+			</>
+		);
+	}
 
 	const user = await getUserAction(clerkUser.id);
 	if (!user) redirect("/");
