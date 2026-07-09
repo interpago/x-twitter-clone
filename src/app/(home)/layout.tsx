@@ -14,7 +14,18 @@ interface Props {
 
 const layout = async ({ children }: Props) => {
 	const clerkUser = await currentUser();
-	if (!clerkUser) return null;
+
+	if (!clerkUser) {
+		return (
+			<main className="min-h-screen">
+				<section className="h-full max-w-7xl mx-auto flex justify-center">
+					<section className="max-sm:border-none border-x border-x-gray-300 max-sm:pb-32 sm:pb-0 w-full max-sm:max-w-full max-w-[600px]">
+						{children}
+					</section>
+				</section>
+			</main>
+		);
+	}
 
 	const user = await getUserAction(clerkUser.id);
 	if (!user) redirect("/");
