@@ -21,8 +21,14 @@ interface Props {
 }
 
 const layout = async ({ children }: Props) => {
-	const clerkUser = await currentUser();
-	if (!clerkUser) return null;
+	let clerkUser = null;
+	try {
+		clerkUser = await currentUser();
+	} catch {}
+
+	if (!clerkUser) {
+		return <>{children}</>;
+	}
 
 	const user = await getUserAction(clerkUser.id);
 	if (!user) redirect("/");
