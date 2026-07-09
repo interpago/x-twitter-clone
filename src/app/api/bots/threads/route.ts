@@ -35,10 +35,10 @@ export async function POST(req: NextRequest) {
 		});
 
 		return NextResponse.json(thread, { status: 201 });
-	} catch (error) {
+	} catch (error: any) {
 		console.error("[BOT_CREATE_THREAD]", error);
 		return NextResponse.json(
-			{ error: "Internal server error" },
+			{ error: error?.message || "Internal server error" },
 			{ status: 500 }
 		);
 	}
