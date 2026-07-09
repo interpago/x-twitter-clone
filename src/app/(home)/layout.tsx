@@ -7,6 +7,7 @@ import Modal from "@/components/modals/Modal";
 import { currentUser } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
 import { getTotalNotificationsAction } from "@/actions/notification.action";
+import PublicSidebar from "@/components/sharing/PublicSidebar";
 
 interface Props {
 	children: ReactNode;
@@ -22,6 +23,7 @@ const layout = async ({ children }: Props) => {
 		return (
 			<main className="min-h-screen">
 				<section className="h-full max-w-7xl mx-auto flex justify-center">
+					<PublicSidebar />
 					<section className="max-sm:border-none border-x border-x-gray-300 max-sm:pb-32 sm:pb-0 w-full max-sm:max-w-full max-w-[600px]">
 						{children}
 					</section>
